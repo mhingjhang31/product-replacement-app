@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id          String    @id
+  shop        String
+  state       String
+  isOnline    Boolean   @default(false)
+  scope       String?
+  expires     DateTime?
+  accessToken String
+  userId      BigInt?
+}
+
+model StoreInformation{
+   id      Int      @id @default(autoincrement())
+   domainName String @unique
+   companyName String?
+   emailContent String?
+   contactNo String?
+   whatsappNo String?
+   senderName String?
+   email String?
+   companyAddress String?
+   copyRightYear String?
+   emailColor String?
+   durationOfEmailExpiration Int?
+   service_id String?
+   template_id String?
+   publicKey String?
+   emailMessageTitle String?
+
+}
+
+model OrderReplacement {
+   id      Int      @id @default(autoincrement())
+  orderID String?
+  originalHandle String?
+  originalProductID String
+  orderName String?
+  originalProduct String
+  quantity Int?
+  unitPrice Float?
+  totalPrice Float?
+  replacementHandle String?
+  replacementProductID String
+  replacementProduct String?
+  replacementQuantity Int?
+  replacementPrice Float?
+  totalReplacementAmount Float?
+  balance Float?
+  lineItemStatus String?
+  sendDate DateTime?
+  acceptedDate DateTime?
+  confirmedDate DateTime?
+  customerName String?
+  orderStatus String?
+}

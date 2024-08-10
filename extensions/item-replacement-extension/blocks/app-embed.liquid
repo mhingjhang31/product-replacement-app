@@ -1,0 +1,285 @@
+<div id="modal-overlay" class="modal-overlay"></div>
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Original Product Name</th>
+          <th>Original Amount</th>
+          <th>Replacement Product Name</th> 
+          <th>Total Replacement Amount</th>
+          <th>Balance Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="orders-list">
+        <!-- Orders will be dynamically inserted here -->
+      </tbody>
+    </table>
+    <button id="submit-replacement-button">Submit Response</button>
+  </div>
+</div>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100; /* Ensure the overlay is behind the modal */
+    display: none; /* Ensure the overlay is initially hidden */
+  }
+
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 200; /* Ensure the modal is on top of the overlay */
+    width: 80%;
+    max-width: 800px;
+    display: none; /* Ensure the modal is initially hidden */
+  }
+
+  .modal-content {
+    position: relative;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th,
+  td {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+
+  th {
+    background-color: #f4f4f4;
+  }
+
+  button {
+    margin: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .accept-button {
+    background-color: #1DB954;
+    /* Green */
+    color: white;
+  }
+
+  .reject-button {
+    background-color: #f44336;
+    /* Red */
+    color: white;
+  }
+
+  #submit-replacement-button {
+    background-color: #1DB954;
+    /* Blue */
+    color: white;
+    display: block;
+    margin: 20px auto;
+  }
+
+  .accepted-row {
+    background-color: rgba(76, 175, 80, 0.5); /* Green with opacity 0.5 */
+  }
+
+  .rejected-row {
+    background-color: rgba(244, 67, 54, 0.5); /* Red with opacity 0.5 */
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const modalOverlay = document.getElementById("modal-overlay");
+    const modal = document.getElementById("modal");
+    
+    const orderId = getOrderIdFromUrl();
+    const orderStatuses = []; // Array to store order statuses
+    let fetchedData = []; // Array to store fetched data
+    
+    if (orderId) {
+      fetchOrderData(orderId);
+    } else {
+      console.error('No order ID found in the URL.');
+      const ordersList = document.getElementById('orders-list');
+      ordersList.innerHTML = '<tr><td colspan="8">No order ID found in the URL.</td></tr>';
+    }
+    
+    function getOrderIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('OrderID');
+    }
+    
+
+    function getShopDomainFromUrl() {
+      const currentUrl = new URL(window.location.href);
+      return currentUrl.origin; // This will give you the domain without query parameters
+    }
+    function fetchOrderData(orderId) {
+    
+      const domainName =  getShopDomainFromUrl();
+      fetch(`https://milton-markers-nightlife-lm.trycloudflare.com/api/orders?orderId=${orderId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(data => {
+          fetchedData = data; // Store fetched data for validation
+          const ordersList = document.getElementById('orders-list');
+          ordersList.innerHTML = ''; // Clear any existing rows
+  
+          if (data.message === "No orders found for the given orderId" ||
+              data.message === "Customer already submitted a response" ||
+              data.message === "Customer has exceeded the time limit") {
+            modal.style.display = "none";
+            modalOverlay.style.display = "none"; // Hide overlay if no orders found
+            console.log(data.message); // Log specific message
+            switch(data.message) {
+              case "No orders found for the given orderId":
+                alert("No orders found for the given orderId.");
+                break;
+              case "Customer already submitted a response":
+                alert("Customer has already submitted a response.");
+                break;
+              case "Customer has exceeded the time limit":
+                alert("Customer has exceeded the time limit.");
+                break;
+            }
+            ordersList.innerHTML = `<tr><td colspan="8">${data.message}</td></tr>`;
+          } else {
+            modal.style.display = "block";
+            modalOverlay.style.display = "block"; // Show overlay if orders found
+            if (data.length === 0) {
+              ordersList.innerHTML = '<tr><td colspan="8">No orders found.</td></tr>';
+            } else {
+              data.forEach(order => {
+                const orderRow = document.createElement('tr');
+                orderRow.innerHTML = `
+                  <td>${order.orderName}</td>
+                  <td>${order.originalProduct}</td>
+                  <td>${order.totalPrice}</td>
+                  <td><a href="${domainName}/products/${order.replacementHandle}">${order.replacementProduct}</a> </td>
+                  <td>${order.totalReplacementAmount}</td>
+                  <td>${order.balance}</td>
+                  <td>
+                    <button class="accept-button">Accept</button>
+                    <button class="reject-button">Reject</button>
+                  </td>
+                `;
+                ordersList.appendChild(orderRow);
+  
+                // Add event listeners for the buttons
+                const acceptButton = orderRow.querySelector('.accept-button');
+                const rejectButton = orderRow.querySelector('.reject-button');
+  
+                acceptButton.addEventListener('click', function() {
+                  orderRow.classList.remove('rejected-row');
+                  orderRow.classList.add('accepted-row');
+                  updateOrderStatus(order.orderName, order.originalProductID, order.replacementProductID, 'Accepted');
+                });
+  
+                rejectButton.addEventListener('click', function() {
+                  orderRow.classList.remove('accepted-row');
+                  orderRow.classList.add('rejected-row');
+                  updateOrderStatus(order.orderName, order.originalProductID, order.replacementProductID, 'Rejected');
+                });
+              });
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching orders:', error); // Log errors
+          const ordersList = document.getElementById('orders-list');
+          ordersList.innerHTML = '<tr><td colspan="8">Error fetching orders.</td></tr>';
+          modal.style.display = "none";
+          modalOverlay.style.display = "none"; // Hide overlay if there's an error
+        });
+    }
+    
+    function updateOrderStatus(orderId, productId, replacementId, status) {
+      orderStatuses.push({ orderId: orderId, productId: productId, replacementId: replacementId, status: status });
+      console.log('Order statuses:', orderStatuses); // Log the updated array
+    }
+    
+    // Handle the "Submit Replacement" button click
+    const submitReplacementButton = document.getElementById('submit-replacement-button');
+    submitReplacementButton.addEventListener('click', function() {
+      if (validateOrderStatuses()) {
+        submitOrderStatuses();
+      } else {
+        alert('Please complete all the actions for each item.');
+      }
+    });
+    
+    function validateOrderStatuses() {
+      for (const order of fetchedData) {
+        const exists = orderStatuses.some(status => 
+          status.orderId === order.orderName && 
+          status.productId === order.originalProductID && 
+          status.replacementId === order.replacementProductID
+        );
+        if (!exists) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    function submitOrderStatuses() {
+      const orderStatusesJson = JSON.stringify(orderStatuses);
+      fetch(`https://milton-markers-nightlife-lm.trycloudflare.com/api/replace-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: orderStatusesJson
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error Response' + response);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Order statuses submitted successfully:', data);
+        alert('Order statuses submitted successfully!');
+        modal.style.display = "none";
+        modalOverlay.style.display = "none"; // Hide overlay after submission
+      })
+      .catch(error => {
+        console.error('Error submitting order statuses:', error); // Log errors
+        alert('Error submitting order statuses. Please try again.');
+      });
+    }
+  });
+</script>
+
+{% schema %}
+  {
+    "name": "SKU Replacement",
+    "target": "body",
+    "settings": []
+  }
+{% endschema %}

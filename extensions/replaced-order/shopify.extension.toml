@@ -1,0 +1,11 @@
+[[extensions]]
+name = "Replaced Order"
+handle = "replaced-order"
+type = "flow_trigger"
+
+description = "Your description"
+
+[settings]
+
+  [[settings.fields]]
+  type = "order_reference"

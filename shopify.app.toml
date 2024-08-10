@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "624057504232c03aef6db161de5da4e8"
+name = "Item Replacement App"
+handle = "item-replacement-app"
+application_url = "https://lucas-calculation-hotel-tv.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "order-item-replacement-app.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_order_edits,read_orders,read_product_listings,read_products,write_order_edits,write_products"
+
+[auth]
+redirect_urls = [
+  "https://lucas-calculation-hotel-tv.trycloudflare.com/auth/callback",
+  "https://lucas-calculation-hotel-tv.trycloudflare.com/auth/shopify/callback",
+  "https://lucas-calculation-hotel-tv.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-04"
+
+[pos]
+embedded = false

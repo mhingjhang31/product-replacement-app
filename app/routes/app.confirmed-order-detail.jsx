@@ -16,6 +16,7 @@ import { useLoaderData, useSubmit, redirect } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 
 
+
 // Loader function to fetch order and product data
 export async function loader({ request }) {
   const urlParams = new URLSearchParams(request.url.split('?')[1]);

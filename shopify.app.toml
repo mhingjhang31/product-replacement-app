@@ -3,11 +3,11 @@
 client_id = "624057504232c03aef6db161de5da4e8"
 name = "Item Replacement App"
 handle = "item-replacement-app"
-application_url = "https://lucas-calculation-hotel-tv.trycloudflare.com"
+application_url = "https://product-replacement-app-final.fly.dev"
 embedded = true
 
 [build]
-automatically_update_urls_on_dev = true
+automatically_update_urls_on_dev = false
 dev_store_url = "order-item-replacement-app.myshopify.com"
 include_config_on_deploy = true
 
@@ -17,9 +17,9 @@ scopes = "read_customers,read_order_edits,read_orders,read_product_listings,read
 
 [auth]
 redirect_urls = [
-  "https://lucas-calculation-hotel-tv.trycloudflare.com/auth/callback",
-  "https://lucas-calculation-hotel-tv.trycloudflare.com/auth/shopify/callback",
-  "https://lucas-calculation-hotel-tv.trycloudflare.com/api/auth/callback"
+  "https://product-replacement-app-final.fly.dev/auth/callback",
+  "https://product-replacement-app-final.fly.dev/auth/shopify/callback",
+  "https://product-replacement-app-final.fly.dev/api/auth/callback"
 ]
 
 [webhooks]

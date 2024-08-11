@@ -15,6 +15,7 @@ import {
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { json } from '@remix-run/node';
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 
 
 async function getShopDetails(domainName) {
